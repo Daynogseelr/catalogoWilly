@@ -1,0 +1,21 @@
+[01-May-2024 00:03:58 America/Caracas] PHP Warning:  require(/home/digicata/public_html/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/digicata/public_html/index.php on line 13
+[01-May-2024 00:03:58 America/Caracas] PHP Fatal error:  Uncaught Error: Failed opening required '/home/digicata/public_html/../vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/digicata/public_html/index.php:13
+Stack trace:
+#0 {main}
+  thrown in /home/digicata/public_html/index.php on line 13
+[01-May-2024 00:04:03 America/Caracas] PHP Warning:  require(/home/digicata/public_html/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/digicata/public_html/index.php on line 13
+[01-May-2024 00:04:03 America/Caracas] PHP Fatal error:  Uncaught Error: Failed opening required '/home/digicata/public_html/../vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/digicata/public_html/index.php:13
+Stack trace:
+#0 {main}
+  thrown in /home/digicata/public_html/index.php on line 13
+[01-May-2024 00:04:08 America/Caracas] PHP Warning:  require(/home/digicata/public_html/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/digicata/public_html/index.php on line 13
+[01-May-2024 00:04:08 America/Caracas] PHP Fatal error:  Uncaught Error: Failed opening required '/home/digicata/public_html/../vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/digicata/public_html/index.php:13
+Stack trace:
+#0 {main}
+  thrown in /home/digicata/public_html/index.php on line 13
+[01-May-2024 00:04:14 America/Caracas] PHP Warning:  require(/home/digicata/public_html/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/digicata/public_html/index.php on line 13
+[01-May-2024 00:04:14 America/Caracas] PHP Fatal error:  Uncaught Error: Failed opening required '/home/digicata/public_html/../vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/digicata/public_html/index.php:13
+Stack trace:
+#0 {main}
+  thrown in /home/digicata/public_html/index.php on line 13
+[25-May-2024 11:20:28 UTC] PHP Fatal error:  Namespace declaration statement has to be the very first statement or after any declare call in the script in /home/digicata/public_html/app/Http/Controllers/StoreController.php on line 3

@@ -4,43 +4,32 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Category;
-use Datatables;
-
+use App\DataTables\CategoryDataTable;
 class CategoryController extends Controller{
-    public function indexCategory(){
-        if (auth()->user()->type == 'ADMINISTRADOR') {
-            return view('categories.category');
-        } else  if (auth()->user()->type == 'EMPRESA' || auth()->user()->type == 'EMPLEADO'){
-            return redirect()->route('dashboard');
+
+    public function indexCategory(CategoryDataTable $dataTable)
+    {
+         if (auth()->user()->type == 'ADMINISTRADOR' || auth()->user()->type == 'EMPRESA' || auth()->user()->type == 'ADMINISTRATIVO') {
+            return $dataTable->render('categories.category');
         } else {
             return redirect()->route('storeIndex');
         }
     }
-    public function ajaxCategory(){
-        if(request()->ajax()) {
-            return datatables()->of(Category::select('*'))
-            ->addColumn('action', 'categories.category-action')
-            ->rawColumns(['action'])
-            ->addIndexColumn()
-            ->make(true);
-        }
-        return view('index');
-    }
+
     public function storeCategory(Request $request){  
         $request->validate([
             'name' => 'required|min:2|max:50|string',
-            'description'  => 'required|min:5|max:200|string'
         ]);   
         $categoryId = $request->id;
         $category   =   Category::updateOrCreate(
-                    [
-                     'id' => $categoryId
-                    ],
-                    [
-                    'name' => $request->name, 
-                    'description' => $request->description,
-                    'status' => '1',
-                ]); 
+            [
+                'id' => $categoryId
+            ],
+            [
+                'name' => $request->name, 
+                'description' => $request->description,
+                'status' => '1',
+            ]); 
         return Response()->json($category);
     }
     public function editCategory(Request $request){   

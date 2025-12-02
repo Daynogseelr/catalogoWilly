@@ -5,60 +5,64 @@ use App\Models\Category;
 use App\Models\AddCategory;
 use App\Models\Product;
 use App\Models\User;
-use App\Models\Cart;
-use App\Models\Employee;
+use App\Models\Bill;
+use App\Models\Shopping; // Add this line
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth; // Agrega esta línea
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller{
-    public function index(){
-        if (auth()->user()->type == 'ADMINISTRADOR') {
-            $countCategory = Category::where('status', 1)->get()->count();
-            $countProduct = Product::get()->count();
-            $countClient = User::where('status', 1)->where('type', 'CLIENTE')->get()->count();
-            $countOrder = Cart::where('status','!=', 'ACTIVO')->where('status','!=', 'FINALIZADO')->where('status','!=', 'INCONCLUSO')->get()->count();
-            return view('dashboard', compact('countCategory','countProduct','countClient','countOrder'));
-        } else if (auth()->user()->type == 'EMPRESA') {
-            $countCategory = AddCategory::where('id_company', auth()->id())->groupBy('id_category')->count();
-            $countProduct = Product::where('id_company', auth()->id())->count();
-            $countClient = User::where('status', 1)->where('type', 'CLIENTE')->count();
-            $countOrder = Cart::where('status','!=', 'ACTIVO')->where('status','!=', 'FINALIZADO')->where('status','!=', 'INCONCLUSO')
-            ->where('id_company',auth()->id())->count();
-            return view('dashboard', compact('countCategory','countProduct','countClient','countOrder'));
-        } else if (auth()->user()->type == 'EMPLEADO'){
-            $id_company = Employee::select('id_company')->where('id_employee',auth()->id())->first();
-            $countCategory = AddCategory::where('id_company', $id_company->id_company)->groupBy('id_category')->count();
-            $countProduct = Product::where('id_company', $id_company->id_company)->count();
-            $countClient = User::where('status', 1)->where('type', 'CLIENTE')->count();
-            $countOrder = Cart::where('status','!=', 'ACTIVO')->where('status','!=', 'FINALIZADO')->where('status','!=', 'INCONCLUSO')
-            ->where('id_company',$id_company->id_company)->count();
-            return view('dashboard', compact('countCategory','countProduct','countClient','countOrder'));
-        } else {
-            return redirect()->route('storeIndex');
+     public function index(Request $request){
+        // obtener sucursal seleccionada por query param `sucursal` (id o nombre)
+        $sucursal = null;
+        $sucursalIdentifier = $request->query('sucursal');
+        // if no query param, try to read selected sucursal from session (set by middleware or barra)
+        if (! $sucursalIdentifier) {
+            $sucursalIdentifier = session('selected_sucursal');
         }
-    }
-    public function ajaxProductDashboard(){
-        if (auth()->user()->type == 'ADMINISTRADOR') {
-            if(request()->ajax()) {
-                return datatables()->of(Product::select('*'))
-                ->addIndexColumn()
-                ->make(true);
+        if ($sucursalIdentifier) {
+            if (is_numeric($sucursalIdentifier)) {
+                $sucursal = DB::table('sucursals')->where('id', intval($sucursalIdentifier))->first();
+            } else {
+                $sucursal = DB::table('sucursals')
+                    ->where('name', $sucursalIdentifier)
+                    ->orWhere(DB::raw("LOWER(REPLACE(name,' ', '-'))"), strtolower(str_replace(' ', '-', $sucursalIdentifier)))
+                    ->first();
             }
-        } else if (auth()->user()->type == 'EMPRESA') {
-            if(request()->ajax()) {
-                return datatables()->of(Product::select('*')->where('id_company',auth()->id()))
-                ->addIndexColumn()
-                ->make(true);
-            }
-        } else if (auth()->user()->type == 'EMPLEADO'){
-            $id_company = Employee::select('id_company')->where('id_employee',auth()->id())->first();
-            if(request()->ajax()) {
-                return datatables()->of(Product::select('*')->where('id_company',$id_company->id_company))
-                ->addIndexColumn()
-                ->make(true);
-            }
-        } else {
-            return redirect()->route('storeIndex');
         }
-        return view('index');
+
+        $countCategory = Category::where('status', 1)->count();
+        $countProduct = Product::count();
+        $countClient = User::where('status', 1)->where('type', 'CLIENTE')->count();
+
+        // Contadores y totales filtrados por sucursal cuando corresponde
+        $countBill = Bill::where('status','!=', 0)
+            ->when($sucursal, function($q) use ($sucursal){
+                return $q->where('id_sucursal', $sucursal->id);
+            })->count();
+
+        $totalBilling = Bill::when($sucursal, function($q) use ($sucursal){
+                return $q->where('id_sucursal', $sucursal->id);
+            })->sum('net_amount'); // Calculate total billing
+
+        $totalPurchases = Shopping::when($sucursal, function($q) use ($sucursal){
+                return $q->where('id_sucursal', $sucursal->id);
+            })->sum('total'); // Calculate total purchases
+
+        // Calculate total stock value for selected sucursal (or global if none)
+        $totalStock = 0;
+        $products = Product::all();
+        foreach ($products as $product) {
+            if ($sucursal) {
+                $lastStock = $product->stocks()->where('id_sucursal', $sucursal->id)->latest()->first();
+            } else {
+                $lastStock = $product->stocks()->latest()->first();
+            }
+            $stockQty = $lastStock ? $lastStock->quantity : 0;
+            $totalStock += $stockQty * $product->cost;
+        }
+
+        return view('dashboard', compact('countCategory','countProduct','countClient','countBill', 'totalBilling', 'totalPurchases', 'totalStock', 'sucursal'));
     }
+     
 }

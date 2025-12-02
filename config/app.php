@@ -65,7 +65,7 @@ return [
     |
     */
 
-    'timezone' => env('APP_TIMEZONE', 'UTC'),
+    'timezone' => 'America/Caracas',
 
     /*
     |--------------------------------------------------------------------------
@@ -159,8 +159,6 @@ return [
          * Application Service Providers...
          */
         App\Providers\AppServiceProvider::class,
-        App\Providers\CartProvider::class,
-
         Yajra\DataTables\DataTablesServiceProvider::class,
 
     ],
@@ -168,6 +166,7 @@ return [
     
     'aliases' => [
         'Datatables' => Yajra\Datatables\Facades\Datatables::class,
+
     ],
 
 ];

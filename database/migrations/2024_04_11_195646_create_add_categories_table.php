@@ -13,8 +13,6 @@ return new class extends Migration
     {
         Schema::create('add_categories', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('id_company');
-            $table->foreign('id_company')->references('id')->on('users')->onDelete('cascade');
             $table->unsignedBigInteger('id_category');
             $table->foreign('id_category')->references('id')->on('categories')->onDelete('cascade');
             $table->unsignedBigInteger('id_product');

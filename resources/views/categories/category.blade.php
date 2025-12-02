@@ -1,41 +1,33 @@
 
 @extends('app', ['page' => __('Ventas'), 'pageSlug' => 'category'])
 @section('content')
-    <div class="container-fluid py-1">
-        <div class="row mt-4">
+    <div class="container-fluid">
+        <div class="row">
             <div class="col-lg-12 mb-lg-0 mb-4">
                 <div class="card z-index-2 h-100">
                     <div class="card-header pb-0 pt-3 bg-transparent">
                         <div class="row">
                             <div class="col-sm-12 card-header-info" style="width: 98% !important;">
                                 <div class="row">
-                                    <div class="col-sm-11">
-                                        <h4>Categorias</h4>
+                                    <div class="col-10 col-sm-11">
+                                        <h4>{{__('Categories')}}</h4>
                                     </div>
-                                    <div class="col-sm-1">
-                                        <a class="btn btn-primary" onClick="add()" href="javascript:void(0)"> 
+                                    <div class="col-2 col-sm-1">
+                                        <a class="btn btn-danger2" onClick="add()" href="javascript:void(0)"> 
                                             <i class="fa-solid fa-circle-plus"></i>
                                         </a>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        <br>
                     </div>
-                    <div class="card-body p-3">
-                        <div class="card-body" >
-                            <div class="tabla table-responsive" style="font-size: 13px;"> 
-                                <table class="table table-striped" id="ajax-crud-datatable" style="font-size: 13px; width: 98% !important;">
-                                    <thead>
-                                        <tr>
-                                            <th>Nombre</th>
-                                            <th>Descripcion</th>
-                                            <th>Accion</th>
-                                        </tr>
-                                    </thead>
-                                </table>
-                            </div>
-                        </div>
+                   <div class="card-body p-3">
+                      <div class="table-responsive" style="font-size: 13px;">
+                        {{-- Yajra DataTable --}}
+                        {!! $dataTable->table(['class' => 'table table-striped  table-bordered w-100', 'style' => 'font-size: 13px;'], true) !!}
                     </div>
+                </div>
                 </div>
             </div>
         </div>
@@ -45,7 +37,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modal-title">Agregar Categoria</h5>
+                    <h5 class="modal-title" id="modal-title">{{__('Add Category')}}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -53,18 +45,18 @@
                         <input type="hidden" name="id" id="id">
                         <div class="row">
                             <div class="col-md-12 col-sm-12 form-outline">
-                                <input name="name" type="text" class="form-control" id="name"  placeholder="Nombre" title="Es obligatorio un nombre" minlength="2" maxlength="30" required onkeyup="mayus(this);" onpaste="return false" autocomplete="off">
-                                <label class="form-label" for="form2Example17">Nombre</label>
+                                <input name="name" type="text" class="form-control" id="name"  placeholder="{{__('Name')}}" title="Es obligatorio un nombre" minlength="2" maxlength="30" required onkeyup="mayus(this);"  autocomplete="off">
+                                <label class="form-label" for="form2Example17">{{__('Name')}}</label>
                                 <span id="nameError" class="text-danger error-messages"></span>
                             </div>
                             <div class="col-md-12 col-sm-12 form-outline">
-                                <input name="description" type="text" class="form-control" id="description"  placeholder="Descripcion" title="Es obligatorio una descripcion" minlength="2" maxlength="100" required onkeyup="mayus(this);" onpaste="return false" autocomplete="off">
-                                <label class="form-label" for="form2Example17">Descripcion</label>
+                                <input name="description" type="text" class="form-control" id="description"  placeholder="{{__('Description')}}" title="Es obligatorio una descripcion" minlength="2" maxlength="100" onkeyup="mayus(this);" autocomplete="off">
+                                <label class="form-label" for="form2Example17">{{__('Description')}}</label>
                                 <span id="descriptionError" class="text-danger error-messages"></span>
                             </div>
                         </div>  
                         <div class="col-sm-offset-2 col-sm-12 text-center"><br/>
-                            <button type="submit" class="btn btn-primary" id="btn-save">Enviar</button>
+                            <button type="submit" class="btn btn-primary" id="btn-save">{{__('Send')}}</button>
                         </div>
                     </form>
                 </div>
@@ -73,8 +65,10 @@
         </div>
     </div>
     <!-- end bootstrap model -->
+    @include('footer')
 @endsection  
 @section('scripts')
+{!! $dataTable->scripts() !!}
     <script type="text/javascript">
         $(document).ready( function () {
             $.ajaxSetup({
@@ -82,52 +76,10 @@
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
             }); 
-            $('#ajax-crud-datatable').DataTable({
-                processing: true,
-                serverSide: true,
-                ajax: "{{ url('ajax-crud-datatableCategory') }}",
-                columns: [
-                    { data: 'name', name: 'name' },
-                    { data: 'description', name: 'description' },
-                    { data: 'action', name: 'action', orderable: false},
-                ],
-                order: [[0, 'desc']],
-                "oLanguage": {
-                    "sProcessing":     "Procesando...",
-                    "sLengthMenu": 'Mostrar <select>'+
-                        '<option value="10">10</option>'+
-                        '<option value="20">20</option>'+
-                        '<option value="30">30</option>'+
-                        '<option value="40">40</option>'+
-                        '<option value="50">50</option>'+
-                        '<option value="-1">Todos</option>'+
-                        '</select> registros',    
-                    "sZeroRecords":    "No se encontraron resultados",
-                    "sEmptyTable":     "Ningún dato disponible en esta tabla",
-                    "sInfo":           "Mostrando del (_START_ al _END_) de un total de _TOTAL_ registros",
-                    "sInfoEmpty":      "Mostrando del 0 al 0 de un total de 0 registros",
-                    "sInfoFiltered":   "(de _MAX_ existentes)",
-                    "sInfoPostFix":    "",
-                    "sSearch":         "Buscar:",
-                    "sUrl":            "",
-                    "sInfoThousands":  ",",
-                    "sLoadingRecords": "Por favor espere - cargando...",
-                    "oPaginate": {
-                        "sFirst":    "Primero",
-                        "sLast":     "Último",
-                        "sNext":     "Siguiente",
-                        "sPrevious": "Anterior"
-                    },
-                    "oAria": {
-                        "sSortAscending":  ": Activar para ordenar la columna de manera ascendente",
-                        "sSortDescending": ": Activar para ordenar la columna de manera descendente"
-                    }
-                }
-            });
         });
         function add(){
             $('#categoryForm').trigger("reset");
-            $('#modal-title').html("Agregar Categoria");
+            $('#modal-title').html("{{__('Add Category')}}");
             $('.error-messages').html('');
             $('#category-modal').modal('show');
             $('#id').val('');
@@ -139,26 +91,27 @@
                 data: { id: id },
                 dataType: 'json',
                 success: function(res){
-                    $('#modal-title').html("Editar Categoria");
+                    $('#modal-title').html("{{__('Edit Category')}}");
                     $('.error-messages').html('');
                     $('#category-modal').modal('show');
                     $('#id').val(res.id);
                     $('#name').val(res.name);
                     $('#description').val(res.description);
+                    $('#categories-table').DataTable().ajax.reload();
                 }
             });
         }  
         function deleteFuncAp(id){
             var id = id;
             Swal.fire({
-                title: "Estas seguro?",
-                text: "su registro sera eliminado!",
+                title: "{{__('You are sure?')}}",
+                text: "{{__('your record will be deleted')}}!",
                 icon: "warning",
                 showCancelButton: true,
                 confirmButtonColor: "#3085d6",
                 cancelButtonColor: "#d33",
-                cancelButtonText: "Cancelar",
-                confirmButtonText: "Si, eliminar!"
+                cancelButtonText: "{{__('Cancel')}}",
+                confirmButtonText: "{{__('Yes, delete')}}!"
                 }).then((result) => {
                 if (result.isConfirmed) {
                     deleteFunc(id);
@@ -174,11 +127,10 @@
                 data: { id: id },
                 dataType: 'json',
                 success: function(res){
-                    var oTable = $('#ajax-crud-datatable').dataTable();
-                    oTable.fnDraw(false);
+                    $('#categories-table').DataTable().ajax.reload();
                     Swal.fire({
-                        title: "Eliminado!",
-                        text: "Su registro fue eliminado.",
+                        title: "{{__('Removed')}}!",
+                        text: "{{__('Your registration was deleted')}}.",
                         icon: "success"
                     });
                 }
@@ -197,14 +149,13 @@
                 processData: false,
                 success: (data) => {
                     $("#category-modal").modal('hide');
-                    var oTable = $('#ajax-crud-datatable').dataTable();
-                    oTable.fnDraw(false);
+                    $('#categories-table').DataTable().ajax.reload();
                     $("#btn-save").html('Enviar');
                     $("#btn-save"). attr("disabled", false);
                     Swal.fire({
                         position: "top-end",
                         icon: "success",
-                        title: "Registro guardado exitosamente",
+                        title: "{{__('Log saved successfully')}}",
                         showConfirmButton: false,
                         timer: 1500
                     }); 
@@ -234,15 +185,15 @@
                     Swal.fire({
                         position: "top-end",
                         icon: "success",
-                        title: "Estatus modificado",
+                        title: "{{__('Modified status')}}",
                         showConfirmButton: false,
                         timer: 1500
                     });
                     $('.cambia'+id+'').html('');
                     if (data.status == '1') {
-                        $('.cambia'+id+'').append('<i class="fa-solid fa-toggle-on text-success fs-4"></i>');
+                        $('.cambia'+id+'').append('<i style="margin: -5px !important; padding: 0px !important;"  class="fa-solid fa-toggle-on text-success fs-4"></i>');
                     } else {
-                        $('.cambia'+id+'').append('<i class="fa-solid fa-toggle-off text-danger fs-4"></i>');
+                        $('.cambia'+id+'').append('<i style="margin: -5px !important; padding: 0px !important;"  class="fa-solid fa-toggle-off text-danger fs-4"></i>');
                     }
                 }
             });

@@ -8,14 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class AddCategory extends Model
 {
     use HasFactory;
-    public function company(){
-        return $this->belongsTo(User::class, 'id');
-    }
     public function category(){
-        return $this->belongsTo(Category::class, 'id');
+        return $this->belongsTo(Category::class, 'id_category');
     }
     public function product(){
-        return $this->belongsTo(Product::class, 'id');
+        return $this->belongsTo(Product::class, 'id_product');
     }
-    protected $fillable = ['id_company','id_category','id_product'];
+    protected $fillable = ['id_category','id_product'];
 }

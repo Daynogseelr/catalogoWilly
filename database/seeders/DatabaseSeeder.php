@@ -15,15 +15,20 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void{
         DB::table('users')->insert([
-            'name' => 'DYOSER',
-            'last_name' => 'GONZALEZ',
+            'name' => 'DYOSER GONZALEZ',
             'nationality' => 'V',
             'ci' => '2462228',
             'phone' => '04168835169',
-            'email' => 'DYO123SER123@GMAIL.COM',
-            'password' => Hash::make('24625228'),
             'type' => 'ADMINISTRADOR',
             'direction' => 'CARUPANO',
+            'percent' => '100',
+            'smallBox' => '1',
+            'detal' => '1',
+            'price' => '1',
+            'price2' => '1',
+            'price3' => '1',
+            'user' => 'ADMIN',
+            'password' => Hash::make('ADMIN123'),
             'status' => '1',
         ]);
     }

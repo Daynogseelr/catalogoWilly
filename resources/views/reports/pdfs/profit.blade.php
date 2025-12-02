@@ -1,0 +1,174 @@
+@extends('app', ['page' => __('Ganancias'), 'pageSlug' => 'profitPDF'])
+
+@section('content')
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12 mb-lg-0 mb-4">
+                <div class="card z-index-2 h-100">
+                    <div class="card-header pb-0 pt-3 bg-transparent">
+                        <div class="row">
+                            <div class="col-10 col-sm-11"> {{-- Adjusted column size --}}
+                                <h4 class="card-title">{{__('Profit PDF Reports')}}</h4>
+                            </div>
+                            <div class="col-2 col-sm-1 d-flex justify-content-end"> {{-- Adjusted column size and alignment --}}
+                                <a style="padding: 10px 10px; color:white;" id="generatePdfBtn" target="_blank" data-toggle="tooltip" data-original-title="Generate PDF" class="btn btn-info">
+                                    <i class="fa-regular fa-file-pdf"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="payment_method_type_filter">{{__('Payment Method Type')}}:</label>
+                                    <select class="form-control" id="payment_method_type_filter">
+                                        <option value="TODOS">{{__('All Methods')}}</option>
+                                        {{-- Populate with types from payment_methods table, assuming 'type' is the unique identifier --}}
+                                        @foreach($paymentMethods as $method)
+                                            <option value="{{ $method->id }}">{{ $method->type }} ({{ $method->currency->abbreviation }})</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="start_date_filter">{{__('From Date')}}:</label>
+                                    <input type="date" class="form-control" id="start_date_filter">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="end_date_filter">{{__('To Date')}}:</label>
+                                    <input type="date" class="form-control" id="end_date_filter">
+                                </div>
+                            </div>
+                        </div>
+                       
+                        <div class="card-body">
+                            <div class="tabla table-responsive" style="font-size: 12px;">
+                                <table class="table table-striped" id="ajax-crud-datatableProfitPDF" style="font-size: 13px; width: 98% !important; vertical-align:middle;">
+                                    <thead>
+                                        <tr>
+                                            <th>{{__('ID Payment')}}</th>
+                                            <th>{{__('Date')}}</th>
+                                            <th>{{__('Type')}}</th>
+                                            <th>{{__('Method')}}</th>
+                                            <th>{{__('Reference')}}</th>
+                                            <th>{{__('Seller')}}</th>
+                                            <th>{{__('Amount')}} ($)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th colspan="6" style="text-align:right">{{__('Grand Total')}}:</th>
+                                            <th id="grand_total_display">0.00</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @include('footer')
+@endsection
+
+@section('scripts')
+    <script type="text/javascript">
+        $(document).ready( function () {
+            let dataTable = $('#ajax-crud-datatableProfitPDF').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: "{{ route('reports.profits.ajax') }}",
+                    data: function (d) {
+                        d.payment_method_type_filter = $('#payment_method_type_filter').val();
+                        d.start_date_filter = $('#start_date_filter').val();
+                        d.end_date_filter = $('#end_date_filter').val();
+                    }
+                },
+                columns: [
+                    { data: 'id', name: 'bp.id' },
+                    { data: 'formatted_date', name: 'bp.created_at' },
+                    { data: 'payment_type', name: 'pm.type' },   // <-- Cambiado
+                    { data: 'method', name: 'c.name' },          // <-- Alias correcto
+                    { data: 'reference', name: 'bp.reference' },
+                    { data: 'seller_name', name: 's.name' },
+                    { data: 'amount_formatted', name: 'bp.amount', orderable: false, searchable: false }
+                ],
+                "footerCallback": function ( row, data, start, end, display ) {
+                    let api = this.api();
+                    let total = api.column(6, {page:'current'}).data().reduce(function (a, b) {
+                        // Directly use parseFloat from 'amount_raw' which will be in the data
+                        // Assuming 'amount_raw' will be passed as a numeric value
+                        return parseFloat(a) + parseFloat(b);
+                    }, 0);
+                    $('#grand_total_display').html(total.toFixed(2));
+                },
+                lengthMenu: [
+                    [20, 30, 40, 50, -1],
+                    ['20', '30', '40', '50', 'Todos']
+                ],
+                pageLength: 20,
+                language: { // Using 'language' instead of 'oLanguage' for DataTables 1.10+
+                    "sProcessing": "{{__('Processing')}}...",
+                    "sLengthMenu": "{{__('Show')}} _MENU_ {{__('Registers')}}",
+                    "sZeroRecords": "{{__('No results found')}}",
+                    "sEmptyTable": "{{__('No data available in this table')}}",
+                    "sInfo": "{{__('Showing of')}} _START_ {{__('to the')}} _END_ {{__('of a total of')}} _TOTAL_ {{__('Registers')}}",
+                    "sInfoEmpty": "{{__('Showing 0 to 0 of a total of 0 records')}}",
+                    "sInfoFiltered": "({{__('of')}} _MAX_ {{__('existents')}})",
+                    "sInfoPostFix": "",
+                    "sSearch": "{{__('Search')}}:",
+                    "sUrl": "",
+                    "sInfoThousands": ",",
+                    "sLoadingRecords": "{{__('Please wait - loading')}}...",
+                    "oPaginate": {
+                        "sFirst": "{{__('First')}}",
+                        "sLast": "{{__('Last')}}",
+                        "sNext": "{{__('Next')}}",
+                        "sPrevious": "{{__('Previous')}}"
+                    },
+                    "oAria": {
+                        "sSortAscending": ": {{__('Activate to sort the column in ascending order')}}",
+                        "sSortDescending": ": {{__('Activate to sort the column in descending order')}}"
+                    }
+                }
+            });
+
+            // Auto-apply filters when any filter input changes
+            $('#payment_method_type_filter, #start_date_filter, #end_date_filter').on('change input', function() {
+                dataTable.draw();
+            });
+
+            // Generate PDF using current filters and DataTable state
+            $('#generatePdfBtn').click(function(event) {
+                event.preventDefault();
+                let paymentMethodType = $('#payment_method_type_filter').val();
+                let startDate = $('#start_date_filter').val();
+                let endDate = $('#end_date_filter').val();
+
+                // Get current DataTable search, order column, and direction
+                let search = dataTable.search();
+                let order = dataTable.order();
+                let orderColumnIndex = order.length > 0 ? order[0][0] : null;
+                let orderDir = order.length > 0 ? order[0][1] : null;
+
+                let url = "{{ route('reports.profits.pdf') }}" +
+                    "?type=" + encodeURIComponent(paymentMethodType) +
+                    "&start_date=" + encodeURIComponent(startDate) +
+                    "&end_date=" + encodeURIComponent(endDate) +
+                    "&search=" + encodeURIComponent(search) +
+                    "&order_column=" + encodeURIComponent(orderColumnIndex) +
+                    "&order_dir=" + encodeURIComponent(orderDir);
+
+                window.open(url, '_blank');
+            });
+        });
+    </script>
+@endsection

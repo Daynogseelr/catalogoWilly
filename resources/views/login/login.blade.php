@@ -1,79 +1,170 @@
+{{-- filepath: c:\xampp\htdocs\digicatalogo\resources\views\login\login.blade.php --}}
 @extends('app', ['class' => 'login-page', 'page' => __(''), 'contentClass' => 'login-page', 'pageSlug' => 'login'])
-@section ('content')
-    <section class="vh-100" style="background-color: #ffffffd2;">
-        <div class="container py-5 h-100">
-            <div class="row d-flex justify-content-center align-items-center h-100">
-                <div class="col col-xl-10">
-                    <div class="card" style="border-radius: 1rem;">
-                        <div class="row g-0">
-                            <div class="col-md-6 col-lg-5 d-none d-md-block">
-                                <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel"  style="border-radius: 1rem 0 0 1rem; height:100% !important;">
-                                    <div class="carousel-indicators">
-                                        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-                                        @php
-                                            $im = 0;
-                                        @endphp
-                                        @foreach ($companies as $company)
-                                            @php
-                                                $im++;
-                                            @endphp
-                                            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="{{$im}}" aria-label="Slide {{$im}}"></button>
-                                        @endforeach
-                                    </div>
-                                    <div class="carousel-inner">
-                                        <div class="carousel-item  active" data-bs-interval="3000">
-                                            <img src="../logos/digicatalogo.jpeg" class="d-block w-100" alt="..."  style="border-radius: 1rem 0 0 1rem; height:100% !important;">
-                                        </div>
-                                        @foreach ($companies as $company)
-                                            <div class="carousel-item"  data-bs-interval="2000">
-                                                <img src="../logos/{{$company->logo}}" class="d-block w-100" alt="..."  style="border-radius: 1rem 0 0 1rem; height:100% !important;">
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
-                                      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                      <span class="visually-hidden">Previous</span>
-                                    </button>
-                                    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
-                                      <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                      <span class="visually-hidden">Next</span>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="col-md-6 col-lg-7 d-flex align-items-center">
-                                <div class="card-body p-4 p-lg-5 text-black">
-                                    <form method="get" action="{{ route('logeo') }}" autocomplete="off">
-                                        @csrf
-                                        @method('get')
-                                        @include('alerts.success')
-                                        <div class="d-flex align-items-center pb-1">
-                                            <img src="../assets/img/DIGI.png"  style=" padding:0px; width: 50% !important; height: 190px !important; margin:auto !important;  margin-bottom: -50px !important; margin-top: -50px !important;" >
-                                        </div>
-                                        <h5 class="fw-normal mb-3 pb-3" style="letter-spacing: 1px;">Inicio de sesion</h5>
-                                        @include('alerts.feedback', ['field' => 'email2'])
-                                        <div class="form-outline mb-4 {{ $errors->has('email') ? ' has-danger' : '' }}">
-                                            <input name="email" type="text" class="form-control {{ $errors->has('email') ? ' is-invalid' : '' }}" value="{{ old('email') }}"id="email"  placeholder="Correo" title="Es obligatorio un correo" minlength="5" maxlength="40"required onkeyup="mayus(this);" onpaste="return false" autocomplete="off">
-                                            <label class="form-label" for="form2Example17">Correo Electronico</label>
-                                            @include('alerts.feedback', ['field' => 'email'])
-                                        </div>
-                                        <div class="form-outline mb-4 {{ $errors->has('password') ? ' has-danger' : '' }}">
-                                            <input name="password" type="password" class="form-control {{ $errors->has('password') ? ' is-invalid' : '' }}" value="{{ old('password') }}" id="password" placeholder="Contraseña" title="Es obligatorio una contraseña"  minlength="8" maxlength="20" required >
-                                            <label class="form-label" for="form2Example27">Contraseña</label>
-                                            @include('alerts.feedback', ['field' => 'password'])
-                                        </div>
-                                        <div class="pt-1 mb-4">
-                                        <button class="btn btn-dark btn-lg btn-block" type="submit">Iniciar</button>
-                                        </div>
-                                        <a class="small text-muted" href="">Has olvidado tu contraseña?</a>
-                                        <p class="mb-5 pb-lg-2" style="color: #393f81;">No tienes una cuenta? <a href="{{ route('registerIndex') }}"
-                                            style="color: #393f81;">Registrate aqui</a></p>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+@section('content')
+<style>
+    body {
+        background: linear-gradient(135deg, #e3f2fd 0%, #f5f6fa 100%);
+        min-height: 100vh;
+    }
+    .login-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .login-card {
+        background: #fff;
+        border-radius: 1.5rem;
+        box-shadow: 0 8px 32px 0 rgba(33,150,243,0.10);
+        padding: 2.5rem 2rem 2rem 2rem;
+        max-width: 400px;
+        width: 100%;
+        margin: auto;
+        transition: box-shadow 0.3s;
+        position: relative;
+    }
+    .login-card:hover {
+        box-shadow: 0 16px 48px 0 rgba(33,150,243,0.18);
+    }
+    .logo-img {
+        display: block;
+        margin: 0 auto;
+        max-width: 120px;
+        filter: drop-shadow(0 2px 8px rgba(33,150,243,0.10));
+    }
+    .logo-title {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 2rem;
+        color: #2196f3;
+        letter-spacing: 2px;
+        text-align: center;
+        margin-bottom: 1rem;
+        font-weight: 700;
+    }
+    .form-control {
+        background: #f4f8fb;
+        border: 1px solid #bdbdbd;
+        border-radius: 0.75rem;
+        font-size: 1rem;
+        padding-right: 2.5rem;
+        color: #333;
+        box-shadow: none;
+        transition: border-color 0.2s;
+    }
+    .form-control:focus {
+        border-color: #2196f3;
+        background: #fff;
+        box-shadow: 0 0 0 0.2rem rgba(33,150,243,0.10);
+    }
+    .btn-login {
+        background: linear-gradient(90deg, #2196f3 0%, #00bcd4 100%);
+        color: #fff;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        box-shadow: 0 4px 16px 0 rgba(33,150,243,0.10);
+        transition: background 0.2s;
+        font-size: 1.1rem;
+        border: none;
+    }
+    .btn-login:hover {
+        background: linear-gradient(90deg, #1565c0 0%, #0097a7 100%);
+        color: #fff;
+    }
+    .show-password {
+        position: absolute;
+        right: 1.2rem;
+        top: 30%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #2196f3;
+        font-size: 1.3rem;
+        z-index: 2;
+    }
+    .forgot-link {
+        color: #2196f3;
+        text-decoration: underline;
+        font-size: 0.95rem;
+        display: block;
+        text-align: right;
+        margin-top: -10px;
+        margin-bottom: 18px;
+    }
+    .login-card .card-body {
+        background: transparent;
+        border-radius: 1.5rem;
+        padding: 0;
+    }
+    h5 {
+        color:#00bcd4 !important;
+        font-weight: 500;
+    }
+    @media (max-width: 500px) {
+        .login-card {
+            padding: 1.5rem 0.5rem;
+        }
+        .logo-img {
+            max-width: 90px;
+        }
+    }
+</style>
+<div class="login-container">
+    <div class="login-card">
+        <img src="{{ asset('assets/img/teles5.png') }}" alt="TelematicsTech Logo" class="logo-img">
+        <div class="card-body">
+            <h5 class="logo-title mb-2">{{ __('TELEMATICSTECH') }}</h5>
+            <div class="text-center mb-3" style="color:  #1565c0; font-size:1.1rem; font-weight:500;">
+                SMART SYSTEM
             </div>
+            <form method="post" action="{{ route('logeo') }}" autocomplete="off">
+                @csrf
+                @include('alerts.success')
+                @include('alerts.feedback', ['field' => 'user2'])
+                <div class="form-outline mb-4 position-relative {{ $errors->has('user') ? ' has-danger' : '' }}">
+                    <input name="user" type="text"
+                        class="form-control {{ $errors->has('user') ? ' is-invalid' : '' }}"
+                        value="{{ old('user') }}" id="user" placeholder="Usuario"
+                        title="Es obligatorio un Usuario" minlength="5" maxlength="100"
+                        onpaste="return false" autocomplete="off" onkeyup="mayus(this);" required>
+                    <label class="form-label" for="user">{{ __('Usuario') }}</label>
+                    @include('alerts.feedback', ['field' => 'user'])
+                </div>
+                <div class="form-outline mb-2 position-relative {{ $errors->has('password') ? ' has-danger' : '' }}">
+                    <input name="password" type="password"
+                        class="form-control {{ $errors->has('password') ? ' is-invalid' : '' }}"
+                        value="{{ old('password') }}" id="password" placeholder="Contraseña"
+                        title="Es obligatorio una contraseña" minlength="4" maxlength="20"
+                        required>
+                    <label class="form-label" for="password">{{ __('Contraseña') }}</label>
+                    <span class="show-password" onclick="togglePassword()" title="Mostrar/Ocultar contraseña">
+                        <i class="bi bi-eye" id="eyeIcon"></i>
+                    </span>
+                    @include('alerts.feedback', ['field' => 'password'])
+                </div>
+                <div class="pt-1 mb-2 text-center">
+                    <button class="btn btn-login btn-lg w-100" type="submit">{{ __('Iniciar') }}</button>
+                </div>
+            </form>
         </div>
-    </section>
+        @include('footer')
+    </div>
+</div>
+@endsection
+@section('scripts')
+<!-- Bootstrap Icons CDN para el icono del ojo -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<script>
+    function togglePassword() {
+        const passwordInput = document.getElementById('password');
+        const eyeIcon = document.getElementById('eyeIcon');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            eyeIcon.classList.remove('bi-eye');
+            eyeIcon.classList.add('bi-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            eyeIcon.classList.remove('bi-eye-slash');
+            eyeIcon.classList.add('bi-eye');
+        }
+    }
+</script>
 @endsection

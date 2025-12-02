@@ -10,18 +10,24 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
-    public function employees(){
-        return $this->hasMany(Employee::class, 'id_employee');
+   
+    public function stocks(){
+        return $this->hasMany(Stock::class, 'id_user');
     }
-    public function companies(){
-        return $this->hasMany(Employee::class, 'id_company');
+     public function sucursals()
+    {
+        return $this->belongsToMany(Sucursal::class, 'sucursal_user', 'id_user', 'id_sucursal')->withTimestamps();
+    }
+    public function seller()
+    {
+        return $this->hasMany(Bill::class, 'id_seller');
     }
     /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
-    protected $fillable = ['name','last_name','nationality','ci','phone','email','direction','password','type','logo','status'];
+    protected $fillable = ['name','nationality','ci','phone','state','city','postal_zone','user','direction','password','type','percent','smallBox','detal','price','price2','price3','status'];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -40,7 +46,6 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
