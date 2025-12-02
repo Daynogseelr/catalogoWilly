@@ -25,7 +25,7 @@ class ProductDataTable extends DataTable
         $currency = Currency::find($currencyId);
 
         return (new EloquentDataTable($query))
-            ->addColumn('price', function ($row) {
+           ->addColumn('price', function ($row) {
                 // Mostrar el precio base tal como está (sin aplicar porcentaje de sucursal)
                 return is_numeric($row->cost) ? number_format($row->cost, 2) : null;
             })
@@ -35,6 +35,7 @@ class ProductDataTable extends DataTable
                 $base = is_numeric($row->cost) ? floatval($row->cost) : 0;
                 return number_format($base * $rate, 2);
             })
+
             ->addColumn('stock', function ($row) use ($sucursalId) {
                 $q = Stock::where('id_product', $row->id);
                 if (! empty($sucursalId)) {
@@ -175,7 +176,7 @@ JS;
     {
         return [
             Column::make('code')->title('Código')->addClass('text-center'),
-            Column::make('code2')->title('Código Barra')->addClass('text-center'),
+           	Column::make('code2')->title('Código Barra')->addClass('text-center'),
             Column::make('name')->title('Nombre'),
             Column::make('price')->title('Costo')->addClass('text-center'),
             Column::computed('price_currency')->title('Costo Moneda')->addClass('text-center'),

@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
-    public function indexProduct(ProductDataTable $dataTable)
+       public function indexProduct(ProductDataTable $dataTable)
     {
         $products = Product::get();
         $categories = Category::where('status', 1)->get();
@@ -34,6 +34,7 @@ class ProductController extends Controller
 
         return $dataTable->render('products.product', compact('products', 'categories', 'currencies', 'currencyPrincipal', 'sucursalPercent'));
     }
+
     public function indexLabel()
     {
         if (auth()->user()->type == 'EMPRESA' || auth()->user()->type == 'ADMINISTRADOR' ||  auth()->user()->type == 'ADMINISTRATIVO' ||  auth()->user()->type == 'SUPERVISOR' ||  auth()->user()->type == 'EMPLEADO') {
