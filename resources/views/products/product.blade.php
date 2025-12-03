@@ -49,6 +49,29 @@
                                                 <option value="max">Máximo stock</option>
                                             </select>
                                         </div>
+                                        <div class="col-md-12 mt-3">
+                                            <div class="row g-2 align-items-end">
+                                                <div class="col-auto">
+                                                    <label for="bulkUtilityField">Campo utilidad</label>
+                                                    <select id="bulkUtilityField" class="form-select">
+                                                        <option value="utility_detal">Utilidad Detal</option>
+                                                        <option value="utility">Utilidad 1</option>
+                                                        <option value="utility2">Utilidad 2</option>
+                                                        <option value="utility3">Utilidad 3</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-auto">
+                                                    <label for="bulkUtilityAmount">Sumar %</label>
+                                                    <input id="bulkUtilityAmount" type="number" step="0.01" class="form-control" placeholder="Ej: 5">
+                                                </div>
+                                                <div class="col-auto">
+                                                    <button id="applyBulkUtility" class="btn btn-primary">Aplicar a productos</button>
+                                                </div>
+                                                <div class="col-auto">
+                                                    <small class="text-muted">Se aplicará sólo a productos cuya utilidad seleccionada sea mayor a 0</small>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -819,6 +842,53 @@
                 }
             });
         }
+
+        // Handler para aplicar incremento de utilidad en masa
+        $('#applyBulkUtility').on('click', function(e) {
+            e.preventDefault();
+            const field = $('#bulkUtilityField').val();
+            const amount = parseFloat($('#bulkUtilityAmount').val());
+            if (!field) {
+                Swal.fire('Error', 'Selecciona un campo de utilidad', 'error');
+                return;
+            }
+            if (isNaN(amount)) {
+                Swal.fire('Error', 'Ingresa un monto válido', 'error');
+                return;
+            }
+
+            Swal.fire({
+                title: 'Confirmar',
+                text: '¿Aplicar ' + amount + '% a la utilidad seleccionada en todos los productos con utilidad > 0? Esto modificará los precios correspondientes.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, aplicar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (!result.isConfirmed) return;
+                $.ajax({
+                    url: '{{ url("products/bulk-update-utility") }}',
+                    method: 'POST',
+                    data: {
+                        field: field,
+                        amount: amount,
+                        _token: $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(res) {
+                        if (res.status === 'ok') {
+                            Swal.fire('Hecho', 'Productos actualizados: ' + res.updated, 'success');
+                            $('#products-table').DataTable().ajax.reload();
+                        } else {
+                            Swal.fire('Error', res.message || 'Error desconocido', 'error');
+                        }
+                    },
+                    error: function(xhr) {
+                        const msg = xhr.responseJSON?.message || 'Error al aplicar cambios';
+                        Swal.fire('Error', msg, 'error');
+                    }
+                });
+            });
+        });
 
         function deleteImage() {
             var productId = $('#id').val();

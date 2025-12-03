@@ -488,6 +488,69 @@ class ProductController extends Controller
         $product = Product::where('id', $request->id)->delete();
         return Response()->json($product);
     }
+    /**
+     * Bulk add amount to a selected utility field for products that have that utility > 0.
+     * Expects: field (utility_detal|utility|utility2|utility3), amount (numeric)
+     */
+    public function bulkUpdateUtility(Request $request)
+    {
+        $request->validate([
+            'field' => ['required', 'in:utility_detal,utility,utility2,utility3'],
+            'amount' => ['required', 'numeric']
+        ]);
+
+        $field = $request->input('field');
+        $amount = floatval($request->input('amount'));
+
+        $priceFieldMap = [
+            'utility_detal' => 'price_detal',
+            'utility' => 'price',
+            'utility2' => 'price2',
+            'utility3' => 'price3',
+        ];
+
+        $priceField = $priceFieldMap[$field];
+
+        $updatedCount = 0;
+        DB::beginTransaction();
+        try {
+            Product::whereNotNull($field)
+                ->where($field, '>', 0)
+                ->chunkById(200, function ($products) use (&$updatedCount, $field, $amount, $priceField) {
+                    foreach ($products as $product) {
+                        $oldUtil = floatval($product->{$field}) ?: 0;
+                        $newUtil = $oldUtil + $amount;
+                        // calcular nuevo precio basado en cost
+                        $cost = floatval($product->cost) ?: 0;
+                        if ($cost <= 0) {
+                            // si no hay costo válido, saltar
+                            continue;
+                        }
+                        // calcular nuevo precio basado en cost
+                        $newPrice = $cost * (1 + $newUtil / 100.0);
+                        // Si es precio detal, el campo price_detal debe ser precio por unidad
+                        if ($field === 'utility_detal') {
+                            $units = intval($product->units) > 0 ? intval($product->units) : 1;
+                            $newPrice = $newPrice / $units;
+                        }
+                        // redondear a 2 decimales
+                        $newPrice = round($newPrice, 2);
+
+                        // Actualizar sólo el campo de utilidad y su precio asociado
+                        $product->{$field} = $newUtil;
+                        $product->{$priceField} = $newPrice;
+                        $product->save();
+                        $updatedCount++;
+                    }
+                });
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+        }
+
+        return response()->json(['status' => 'ok', 'updated' => $updatedCount]);
+    }
     public function statusProduct(Request $request)
     {
         $product = Product::find($request->id);

@@ -77,6 +77,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('indexProduct', [ProductController::class, 'indexProduct'])->name('indexProduct');
     Route::get('ajax-crud-datatableProduct', [ProductDataTable::class, 'ajax'])->name('ajax-crud-datatableProduct');
+    // Bulk update utility for selected utility field
+    Route::post('products/bulk-update-utility', [ProductController::class, 'bulkUpdateUtility'])->name('products.bulkUpdateUtility');
     Route::post('storeProduct', [ProductController::class, 'storeProduct']);
     Route::post('editProduct', [ProductController::class, 'editProduct']);
     Route::post('deleteProduct', [ProductController::class, 'destroyProduct']);
